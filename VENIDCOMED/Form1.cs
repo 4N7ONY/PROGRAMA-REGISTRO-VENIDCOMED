@@ -8,10 +8,10 @@ namespace VENIDCOMED
     public partial class Form1 : Form
     {
         // Catálogo de productos
-        string[] nombresComidas = { "Chicharrón Mixto", "Chicharrón de Chancho", "Chicharrón de Hongo", "Cebiche de Hongo", "Plato GRANJA PORCON", "Lomo saltado de res a lo POBRE", "Trucha a la plancha", "Trucha a la plancha con hongo", "Milanesa de Pollo", "1/4 Cuy frito", "Cuy frito entero", "Parrilla de Res", "Parrilla de Alpaca" };
+        string[] nombresComidas = { "Chicharrón Mixto", "Chicharrón de Chancho", "Chicharrón de Hongo", "Ceviche de Hongo", "Plato GRANJA PORCON", "Lomo saltado de res a lo POBRE", "Trucha a la plancha", "Trucha a la plancha con hongo", "Milanesa de Pollo", "1/4 Cuy frito", "Cuy frito entero", "Parrilla de Res", "Parrilla de Alpaca" };
         double[] preciosComidas = { 25.00, 20.00, 20.00, 20.00, 45.00, 25.00, 25.00, 30.00, 20.00, 25.00, 90.00, 25.00, 25.00 };
 
-        string[] nombresBebidas = { "Coca cola 500ml", "Coca cola 1L", "Inka cola 500ml", "Inka cola 1L", "Agua 500ml", "Panisara (Jarra) 1L", "Jugo de Frambuesa 1L" };
+        string[] nombresBebidas = { "Coca cola 500ml", "Coca cola 1L", "Inka cola 500ml", "Inka cola 1L", "Agua 500ml", "Panizara (Jarra) 1L", "Jugo de Frambuesa 1L" };
         double[] preciosBebidas = { 4.00, 10.00, 4.00, 10.00, 2.00, 10.00, 10.00 };
 
         // Variables de control de dinero
@@ -64,7 +64,7 @@ namespace VENIDCOMED
         {
             if (string.IsNullOrWhiteSpace(txtCliente.Text))
             {
-                MessageBox.Show("Falta el nombre del cliente, rey. 👑", "Aviso");
+                MessageBox.Show("Falta el nombre del cliente");
                 return;
             }
 
@@ -106,7 +106,7 @@ namespace VENIDCOMED
                 if (vuelto >= 0)
                     lblVuelto.Text = $"Vuelto: S/. {vuelto:F2}";
                 else
-                    lblVuelto.Text = "Falta dinero ⚠️";
+                    lblVuelto.Text = "Falta dinero";
             }
             else
             {
@@ -119,7 +119,7 @@ namespace VENIDCOMED
         {
             if (totalOrdenActual == 0)
             {
-                MessageBox.Show("No hay nada que cobrar todavía.", "Ojo");
+                MessageBox.Show("Falta cobrar");
                 return;
             }
 
@@ -153,12 +153,12 @@ namespace VENIDCOMED
                         sw.WriteLine($"VUELTO       : S/. {(pagoCon - totalOrdenActual):F2}");
                     }
 
-                    sw.WriteLine("==========================================");
-                    sw.WriteLine("        ¡GRACIAS POR SU COMPRA!           ");
-                    sw.WriteLine("==========================================");
+                    sw.WriteLine("========================================================");
+                    sw.WriteLine("        ¡GRACIAS POR SU COMPRA - VENID COMED!           ");
+                    sw.WriteLine("========================================================");
                 }
 
-                MessageBox.Show($"¡Ticket generado impecable!\nSe guardó como: {nombreArchivo}", "Éxito ✅");
+                MessageBox.Show($"Ticket generado\nSe guardó como: {nombreArchivo}", "Éxito");
             }
             catch (Exception ex)
             {
@@ -203,13 +203,13 @@ namespace VENIDCOMED
                         sw.WriteLine($"{row.Cells[0].Value},{row.Cells[1].Value},{row.Cells[2].Value},{row.Cells[3].Value},{row.Cells[4].Value},{row.Cells[5].Value}");
                     }
 
-                    sw.WriteLine(",,,,,"); // Espacio
+                    sw.WriteLine(",,,,,");
                     sw.WriteLine($",,,,TOTAL RECAUDADO DEL DIA,{totalCajaDiaria:F2}");
                 }
 
-                MessageBox.Show($"¡Caja cerrada como todo un pro!\nData exportada a: {rutaArchivo}\nÁbrelo en Excel y dale a 'Dar formato como tabla'.", "Cierre Exitoso 💰");
+                MessageBox.Show($"Caja cerrada\nData exportada a: {rutaArchivo}\nCierre Exitoso");
 
-                // Reset total
+                // Reseto total
                 dgvVentas.Rows.Clear();
                 btnNuevaOrden.PerformClick();
                 totalCajaDiaria = 0;
