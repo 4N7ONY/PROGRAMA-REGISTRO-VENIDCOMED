@@ -20,6 +20,8 @@ namespace VENIDCOMED
         private RichTextBox rtbTicket;
         private Label lblTotalCaja;
         private TextBox txtPago;
+        private ComboBox cmbMetodoPago;
+        private Label lblMetodoPago;
         private Label lblVuelto;
         private Button btnNuevaOrden;
         private Button btnImprimirTicket;
@@ -46,6 +48,8 @@ namespace VENIDCOMED
             components = new Container();
             cmbCategoria = new ComboBox();
             cmbProductos = new ComboBox();
+            cmbMetodoPago = new ComboBox();
+            lblMetodoPago = new Label();
             dgvVentas = new DataGridView();
             lblReloj = new Label();
             timerReloj = new System.Windows.Forms.Timer(components);
@@ -78,6 +82,22 @@ namespace VENIDCOMED
             cmbProductos.Size = new Size(250, 23);
             cmbProductos.TabIndex = 1;
             // 
+            // cmbMetodoPago
+            // 
+            cmbMetodoPago.Items.AddRange(new object[] { "Efectivo", "Yape", "Plin", "Transferencia" });
+            cmbMetodoPago.Location = new Point(118, 72);
+            cmbMetodoPago.Name = "cmbMetodoPago";
+            cmbMetodoPago.Size = new Size(150, 23);
+            cmbMetodoPago.TabIndex = 16;
+            // 
+            // lblMetodoPago
+            // 
+            lblMetodoPago.Location = new Point(12, 72);
+            lblMetodoPago.Name = "lblMetodoPago";
+            lblMetodoPago.Size = new Size(100, 23);
+            lblMetodoPago.TabIndex = 15;
+            lblMetodoPago.Text = "Método Pago:";
+            // 
             // dgvVentas
             // 
             dgvVentas.AllowUserToAddRows = false;
@@ -88,7 +108,7 @@ namespace VENIDCOMED
             // 
             // lblReloj
             // 
-            lblReloj.Location = new Point(12, 350);
+            lblReloj.Location = new Point(12, 356);
             lblReloj.Name = "lblReloj";
             lblReloj.Size = new Size(200, 23);
             lblReloj.TabIndex = 10;
@@ -120,7 +140,7 @@ namespace VENIDCOMED
             // 
             // rtbTicket
             // 
-            rtbTicket.Location = new Point(12, 80);
+            rtbTicket.Location = new Point(12, 97);
             rtbTicket.Name = "rtbTicket";
             rtbTicket.Size = new Size(406, 200);
             rtbTicket.TabIndex = 5;
@@ -128,7 +148,7 @@ namespace VENIDCOMED
             // 
             // lblTotalCaja
             // 
-            lblTotalCaja.Location = new Point(12, 290);
+            lblTotalCaja.Location = new Point(12, 304);
             lblTotalCaja.Name = "lblTotalCaja";
             lblTotalCaja.Size = new Size(300, 23);
             lblTotalCaja.TabIndex = 7;
@@ -136,7 +156,7 @@ namespace VENIDCOMED
             // 
             // txtPago
             // 
-            txtPago.Location = new Point(12, 320);
+            txtPago.Location = new Point(12, 325);
             txtPago.Name = "txtPago";
             txtPago.PlaceholderText = "Pago";
             txtPago.Size = new Size(100, 23);
@@ -145,7 +165,7 @@ namespace VENIDCOMED
             // 
             // lblVuelto
             // 
-            lblVuelto.Location = new Point(118, 320);
+            lblVuelto.Location = new Point(118, 329);
             lblVuelto.Name = "lblVuelto";
             lblVuelto.Size = new Size(200, 23);
             lblVuelto.TabIndex = 9;
@@ -194,6 +214,8 @@ namespace VENIDCOMED
             ClientSize = new Size(920, 420);
             Controls.Add(cmbCategoria);
             Controls.Add(cmbProductos);
+            Controls.Add(lblMetodoPago);
+            Controls.Add(cmbMetodoPago);
             Controls.Add(txtCliente);
             Controls.Add(nudCantidad);
             Controls.Add(btnRegistrar);

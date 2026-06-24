@@ -86,7 +86,10 @@ namespace VENIDCOMED
             dgvVentas.Rows.Add(fechaHora, txtCliente.Text, cmbCategoria.SelectedItem.ToString(), nombreItem, cantidad, totalVenta.ToString("F2"));
 
             // Actualizar la vista rápida del ticket en pantalla
-            rtbTicket.Text += $"- {cantidad}x {nombreItem} (S/. {totalVenta:F2})\n";
+            string linea = $"- {cantidad}x {nombreItem} (S/. {totalVenta:F2})";
+            rtbTicket.Text += linea + "\n";
+            // También actualizar la vista previa (solo lectura)
+            if (rtbTicketPreview != null) rtbTicketPreview.Text += linea + "\n";
 
             lblTotalCaja.Text = $"Caja Diaria: S/. {totalCajaDiaria:F2}";
             CalcularVuelto(); // Llama a la función del vuelto por si ya habían puesto billete
@@ -100,17 +103,32 @@ namespace VENIDCOMED
 
         private void CalcularVuelto()
         {
+            // Determinar el método de pago (por defecto "Efectivo" si no hay selección)
+            string metodo = (cmbMetodoPago != null && cmbMetodoPago.SelectedItem != null) ? cmbMetodoPago.SelectedItem.ToString() : "Efectivo";
+
+            if (metodo != "Efectivo")
+            {
+                // Para métodos no efectivos no se utiliza el campo de efectivo ni hay vuelto
+                lblVuelto.Text = "Método no efectivo - sin vuelto";
+                return;
+            }
+
+            // Si es efectivo, mostrar cuánto pagó y cuánto es el vuelto, o mensajes claros si falta/monto no ingresado
             if (double.TryParse(txtPago.Text, out double pagoCon))
             {
                 double vuelto = pagoCon - totalOrdenActual;
                 if (vuelto >= 0)
-                    lblVuelto.Text = $"Vuelto: S/. {vuelto:F2}";
+                {
+                    lblVuelto.Text = $"Pagó: S/. {pagoCon:F2} | Vuelto: S/. {vuelto:F2}";
+                }
                 else
-                    lblVuelto.Text = "Falta dinero";
+                {
+                    lblVuelto.Text = $"Faltan: S/. {Math.Abs(vuelto):F2}";
+                }
             }
             else
             {
-                lblVuelto.Text = "Vuelto: S/. 0.00";
+                lblVuelto.Text = "Ingrese monto pagado";
             }
         }
 
@@ -127,7 +145,10 @@ namespace VENIDCOMED
             double subtotal = totalOrdenActual / 1.18;
             double igv = totalOrdenActual - subtotal;
 
-            string nombreArchivo = $"Ticket_{txtCliente.Text}_{DateTime.Now.ToString("HH-mm-ss")}.txt";
+            // Asegurar nombre de archivo válido
+            string clienteSafe = string.IsNullOrWhiteSpace(txtCliente.Text) ? "CLIENTE" : txtCliente.Text;
+            foreach (char c in Path.GetInvalidFileNameChars()) clienteSafe = clienteSafe.Replace(c, '_');
+            string nombreArchivo = $"Ticket_{clienteSafe}_{DateTime.Now.ToString("HH-mm-ss")}.txt";
 
             try
             {
@@ -141,6 +162,7 @@ namespace VENIDCOMED
                     sw.WriteLine("------------------------------------------");
                     sw.WriteLine("DETALLE DE COMPRA:");
                     sw.WriteLine(rtbTicket.Text); // Imprime todo lo que se agregó a la orden
+                    sw.WriteLine($"Metodo Pago  : { (cmbMetodoPago?.SelectedItem?.ToString() ?? "N/A") }");
                     sw.WriteLine("------------------------------------------");
                     sw.WriteLine($"SUBTOTAL     : S/. {subtotal:F2}");
                     sw.WriteLine($"IGV (18%)    : S/. {igv:F2}");
@@ -150,7 +172,10 @@ namespace VENIDCOMED
                     if (double.TryParse(txtPago.Text, out double pagoCon))
                     {
                         sw.WriteLine($"PAGÓ CON     : S/. {pagoCon:F2}");
-                        sw.WriteLine($"VUELTO       : S/. {(pagoCon - totalOrdenActual):F2}");
+                        if ((cmbMetodoPago?.SelectedItem?.ToString() ?? "Efectivo") == "Efectivo")
+                            sw.WriteLine($"VUELTO       : S/. {(pagoCon - totalOrdenActual):F2}");
+                        else
+                            sw.WriteLine($"VUELTO       : S/. 0.00 (Pago no efectivo)");
                     }
 
                     sw.WriteLine("========================================================");
