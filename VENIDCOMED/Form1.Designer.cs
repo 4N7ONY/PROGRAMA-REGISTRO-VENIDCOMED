@@ -63,6 +63,7 @@ namespace VENIDCOMED
             btnImprimirTicket = new Button();
             btnRegistrar = new Button();
             btnCerrarCaja = new Button();
+            rtbTicketPreview = new RichTextBox();
             ((ISupportInitialize)dgvVentas).BeginInit();
             ((ISupportInitialize)nudCantidad).BeginInit();
             SuspendLayout();
@@ -207,6 +208,16 @@ namespace VENIDCOMED
             btnCerrarCaja.Text = "Cerrar Caja";
             btnCerrarCaja.Click += btnCerrarCaja_Click;
             // 
+            // rtbTicketPreview
+            // 
+            rtbTicketPreview.BackColor = SystemColors.ControlLight;
+            rtbTicketPreview.Location = new Point(424, 320);
+            rtbTicketPreview.Name = "rtbTicketPreview";
+            rtbTicketPreview.ReadOnly = true;
+            rtbTicketPreview.Size = new Size(480, 80);
+            rtbTicketPreview.TabIndex = 14;
+            rtbTicketPreview.Text = "";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -220,6 +231,7 @@ namespace VENIDCOMED
             Controls.Add(nudCantidad);
             Controls.Add(btnRegistrar);
             Controls.Add(rtbTicket);
+            Controls.Add(rtbTicketPreview);
             Controls.Add(dgvVentas);
             Controls.Add(lblTotalCaja);
             Controls.Add(txtPago);
@@ -238,5 +250,7 @@ namespace VENIDCOMED
         }
 
         #endregion
+
+        private RichTextBox rtbTicketPreview;
     }
 }

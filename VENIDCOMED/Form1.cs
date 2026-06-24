@@ -14,9 +14,9 @@ namespace VENIDCOMED
         string[] nombresBebidas = { "Coca cola 500ml", "Coca cola 1L", "Inka cola 500ml", "Inka cola 1L", "Agua 500ml", "Panizara (Jarra) 1L", "Jugo de Frambuesa 1L" };
         double[] preciosBebidas = { 4.00, 10.00, 4.00, 10.00, 2.00, 10.00, 10.00 };
 
-        // Variables de control de dinero
+        // Variables de control
         double totalCajaDiaria = 0.0;
-        double totalOrdenActual = 0.0; // ¡NUEVO! Para saber cuánto debe el cliente de ahorita
+        double totalOrdenActual = 0.0; //Para saber cuánto debe el cliente
 
         public Form1()
         {
@@ -28,8 +28,7 @@ namespace VENIDCOMED
             cmbCategoria.Items.Add("Comidas");
             cmbCategoria.Items.Add("Bebidas");
             cmbCategoria.SelectedIndex = 0;
-
-            // Configuración de la tabla maestra
+ 
             dgvVentas.ColumnCount = 6;
             dgvVentas.Columns[0].Name = "Fecha/Hora";
             dgvVentas.Columns[1].Name = "Cliente";
@@ -40,10 +39,10 @@ namespace VENIDCOMED
 
             dgvVentas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvVentas.AllowUserToAddRows = false;
-            dgvVentas.ReadOnly = true; // Para que no editen la tabla a mano
+            dgvVentas.ReadOnly = true;
         }
 
-        // EVENTO DEL RELOJ EN VIVO
+        // EVENTO DEL RELO
         private void timerReloj_Tick(object sender, EventArgs e)
         {
             lblReloj.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
@@ -95,7 +94,7 @@ namespace VENIDCOMED
             CalcularVuelto(); // Llama a la función del vuelto por si ya habían puesto billete
         }
 
-        // ¡NUEVO! Calcula el vuelto cada vez que escribes en txtPago
+        //Calcula el vuelto cada vez que escribes en txtPago
         private void txtPago_TextChanged(object sender, EventArgs e)
         {
             CalcularVuelto();
@@ -132,7 +131,7 @@ namespace VENIDCOMED
             }
         }
 
-        // ¡NUEVO! Imprimir ticket individual en TXT
+        //Imprimir ticket individual en TXT
         private void btnImprimirTicket_Click(object sender, EventArgs e)
         {
             if (totalOrdenActual == 0)
@@ -208,16 +207,16 @@ namespace VENIDCOMED
         {
             if (dgvVentas.Rows.Count == 0)
             {
-                MessageBox.Show("Caja vacía. ¡A vender más mañana!", "Cierre");
+                MessageBox.Show("Caja vacía");
                 return;
             }
 
             string fecha = DateTime.Now.ToString("dd-MM-yyyy");
-            string rutaArchivo = $"Reporte_Avanzado_{fecha}.csv";
+            string rutaArchivo = $"Reporte{fecha}.csv";
 
             try
             {
-                // Le agregué un BOM de UTF8 para que Excel lea los tildes a la perfección
+                // Se agreguo un BOM de UTF8 para que Excel lea los tildes a la perfección
                 using (StreamWriter sw = new StreamWriter(rutaArchivo, false, new UTF8Encoding(true)))
                 {
                     // Encabezados limpios para que se conviertan en tabla fácil
