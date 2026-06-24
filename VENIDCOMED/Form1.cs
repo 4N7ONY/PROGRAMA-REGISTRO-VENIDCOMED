@@ -28,7 +28,34 @@ namespace VENIDCOMED
             cmbCategoria.Items.Add("Comidas");
             cmbCategoria.Items.Add("Bebidas");
             cmbCategoria.SelectedIndex = 0;
- 
+
+            // Configurar dgvPedidos
+            dgvPedidos.ColumnCount = 5;
+            dgvPedidos.Columns[0].Name = "Ítem";
+            dgvPedidos.Columns[1].Name = "Cant.";
+            dgvPedidos.Columns[2].Name = "P. Unitario";
+            dgvPedidos.Columns[3].Name = "Total";
+            dgvPedidos.Columns[4].Name = "RowIndex";
+            dgvPedidos.Columns[4].Visible = false; // Columna oculta para guardar índice
+            
+            // Hacer las columnas de datos de solo lectura
+            for (int i = 0; i < 4; i++)
+            {
+                dgvPedidos.Columns[i].ReadOnly = true;
+            }
+            
+            // Agregar columna de botones
+            DataGridViewButtonColumn btnEliminar = new DataGridViewButtonColumn();
+            btnEliminar.HeaderText = "Eliminar";
+            btnEliminar.Text = "🗑️";
+            btnEliminar.UseColumnTextForButtonValue = true;
+            btnEliminar.ReadOnly = false; // Permitir interacción con el botón
+            dgvPedidos.Columns.Add(btnEliminar);
+            
+            dgvPedidos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvPedidos.AllowUserToAddRows = false;
+            dgvPedidos.CellContentClick += dgvPedidos_CellContentClick;
+
             dgvVentas.ColumnCount = 6;
             dgvVentas.Columns[0].Name = "Fecha/Hora";
             dgvVentas.Columns[1].Name = "Cliente";
@@ -57,6 +84,21 @@ namespace VENIDCOMED
                 cmbProductos.Items.AddRange(nombresBebidas);
 
             if (cmbProductos.Items.Count > 0) cmbProductos.SelectedIndex = 0;
+            ActualizarPrecioUnitario();
+        }
+
+        private void cmbProductos_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ActualizarPrecioUnitario();
+        }
+
+        private void ActualizarPrecioUnitario()
+        {
+            int index = cmbProductos.SelectedIndex;
+            if (index < 0) return;
+
+            double precio = cmbCategoria.SelectedItem.ToString() == "Comidas" ? preciosComidas[index] : preciosBebidas[index];
+            lblPrecioUnitario.Text = $"Precio Unitario: S/. {precio:F2}";
         }
 
         private void btnRegistrar_Click(object sender, EventArgs e)
@@ -80,24 +122,57 @@ namespace VENIDCOMED
             totalCajaDiaria += totalVenta;
             totalOrdenActual += totalVenta;
 
-            // Registrar en la tabla
+            // Registrar en la tabla de ventas del día
             string fechaHora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
             dgvVentas.Rows.Add(fechaHora, txtCliente.Text, cmbCategoria.SelectedItem.ToString(), nombreItem, cantidad, totalVenta.ToString("F2"));
 
-            // Actualizar la vista rápida del ticket en pantalla
-            string linea = $"- {cantidad}x {nombreItem} (S/. {totalVenta:F2})";
-            rtbTicket.Text += linea + "\n";
-            // También actualizar la vista previa (solo lectura)
-            if (rtbTicketPreview != null) rtbTicketPreview.Text += linea + "\n";
+            // Agregar a dgvPedidos para esta orden
+            int rowIndex = dgvPedidos.Rows.Add(nombreItem, cantidad, precioItem.ToString("F2"), totalVenta.ToString("F2"));
+            dgvPedidos.Rows[rowIndex].Cells[4].Value = rowIndex; // Guardar el índice
 
+            // NO limpiar campos después de registrar, mantener el cliente
+            nudCantidad.Value = 1;
+            txtPago.Clear();
+            lblVuelto.Text = "Vuelto: S/. 0.00";
+
+            // Actualizar vistas
+            ActualizarVistaPrevia();
             lblTotalCaja.Text = $"Caja Diaria: S/. {totalCajaDiaria:F2}";
-            CalcularVuelto(); // Llama a la función del vuelto por si ya habían puesto billete
+            lblTotalPedido.Text = $"Total Pedido: S/. {totalOrdenActual:F2}";
+            CalcularVuelto();
+        }
+
+        // Manejar clic en botón Eliminar
+        private void dgvPedidos_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == 5 && e.RowIndex >= 0) // Columna de Eliminar (índice 5 es la columna de botones)
+            {
+                // Obtener el total de la fila que se va a eliminar
+                if (e.RowIndex < dgvPedidos.Rows.Count)
+                {
+                    double totalFila = double.Parse(dgvPedidos.Rows[e.RowIndex].Cells[3].Value?.ToString() ?? "0");
+                    
+                    // Restar del total actual y del total diario
+                    totalOrdenActual -= totalFila;
+                    totalCajaDiaria -= totalFila;
+
+                    // Eliminar la fila
+                    dgvPedidos.Rows.RemoveAt(e.RowIndex);
+
+                    // Actualizar vistas
+                    ActualizarVistaPrevia();
+                    lblTotalCaja.Text = $"Caja Diaria: S/. {totalCajaDiaria:F2}";
+                    lblTotalPedido.Text = $"Total Pedido: S/. {totalOrdenActual:F2}";
+                    CalcularVuelto();
+                }
+            }
         }
 
         //Calcula el vuelto cada vez que escribes en txtPago
         private void txtPago_TextChanged(object sender, EventArgs e)
         {
             CalcularVuelto();
+            ActualizarVistaPrevia();
         }
 
         private void CalcularVuelto()
@@ -131,6 +206,62 @@ namespace VENIDCOMED
             }
         }
 
+        // Generar contenido del ticket
+        private string GenerarContenidoTicket()
+        {
+            double subtotal = totalOrdenActual / 1.18;
+            double igv = totalOrdenActual - subtotal;
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("==========================================");
+            sb.AppendLine("       RESTAURANTE 'VENID COMED'          ");
+            sb.AppendLine("==========================================");
+            sb.AppendLine($"Fecha y Hora : {DateTime.Now}");
+            sb.AppendLine($"Cliente      : {txtCliente.Text.ToUpper()}");
+            sb.AppendLine("------------------------------------------");
+            sb.AppendLine("DETALLE DE COMPRA:");
+            
+            foreach (DataGridViewRow row in dgvPedidos.Rows)
+            {
+                string item = row.Cells[0].Value?.ToString() ?? "";
+                string cantidad = row.Cells[1].Value?.ToString() ?? "0";
+                string unitario = row.Cells[2].Value?.ToString() ?? "0";
+                string total = row.Cells[3].Value?.ToString() ?? "0";
+                sb.AppendLine($"- {cantidad}x {item} (S/. {total})");
+            }
+
+            sb.AppendLine($"Metodo Pago  : {(cmbMetodoPago?.SelectedItem?.ToString() ?? "N/A")}");
+            sb.AppendLine("------------------------------------------");
+            sb.AppendLine($"SUBTOTAL     : S/. {subtotal:F2}");
+            sb.AppendLine($"IGV (18%)    : S/. {igv:F2}");
+            sb.AppendLine($"TOTAL A PAGAR: S/. {totalOrdenActual:F2}");
+            sb.AppendLine("------------------------------------------");
+
+            if (double.TryParse(txtPago.Text, out double pagoCon))
+            {
+                sb.AppendLine($"PAGÓ CON     : S/. {pagoCon:F2}");
+                if ((cmbMetodoPago?.SelectedItem?.ToString() ?? "Efectivo") == "Efectivo")
+                    sb.AppendLine($"VUELTO       : S/. {(pagoCon - totalOrdenActual):F2}");
+                else
+                    sb.AppendLine($"VUELTO       : S/. 0.00 (Pago no efectivo)");
+            }
+
+            sb.AppendLine("========================================================");
+            sb.AppendLine("        ¡GRACIAS POR SU COMPRA - VENID COMED!           ");
+            sb.AppendLine("========================================================");
+
+            return sb.ToString();
+        }
+
+        // Actualizar vista previa
+        private void ActualizarVistaPrevia()
+        {
+            if (rtbTicketPreview != null && totalOrdenActual > 0)
+            {
+                rtbTicketPreview.Text = GenerarContenidoTicket();
+            }
+        }
+
         //Imprimir ticket individual en TXT
         private void btnImprimirTicket_Click(object sender, EventArgs e)
         {
@@ -139,10 +270,6 @@ namespace VENIDCOMED
                 MessageBox.Show("Falta cobrar");
                 return;
             }
-
-            // Matemática de impuestos
-            double subtotal = totalOrdenActual / 1.18;
-            double igv = totalOrdenActual - subtotal;
 
             // Asegurar nombre de archivo válido
             string clienteSafe = string.IsNullOrWhiteSpace(txtCliente.Text) ? "CLIENTE" : txtCliente.Text;
@@ -153,33 +280,7 @@ namespace VENIDCOMED
             {
                 using (StreamWriter sw = new StreamWriter(nombreArchivo, false, Encoding.UTF8))
                 {
-                    sw.WriteLine("==========================================");
-                    sw.WriteLine("       RESTAURANTE 'VENID COMED'          ");
-                    sw.WriteLine("==========================================");
-                    sw.WriteLine($"Fecha y Hora : {DateTime.Now}");
-                    sw.WriteLine($"Cliente      : {txtCliente.Text.ToUpper()}");
-                    sw.WriteLine("------------------------------------------");
-                    sw.WriteLine("DETALLE DE COMPRA:");
-                    sw.WriteLine(rtbTicket.Text); // Imprime todo lo que se agregó a la orden
-                    sw.WriteLine($"Metodo Pago  : { (cmbMetodoPago?.SelectedItem?.ToString() ?? "N/A") }");
-                    sw.WriteLine("------------------------------------------");
-                    sw.WriteLine($"SUBTOTAL     : S/. {subtotal:F2}");
-                    sw.WriteLine($"IGV (18%)    : S/. {igv:F2}");
-                    sw.WriteLine($"TOTAL A PAGAR: S/. {totalOrdenActual:F2}");
-                    sw.WriteLine("------------------------------------------");
-
-                    if (double.TryParse(txtPago.Text, out double pagoCon))
-                    {
-                        sw.WriteLine($"PAGÓ CON     : S/. {pagoCon:F2}");
-                        if ((cmbMetodoPago?.SelectedItem?.ToString() ?? "Efectivo") == "Efectivo")
-                            sw.WriteLine($"VUELTO       : S/. {(pagoCon - totalOrdenActual):F2}");
-                        else
-                            sw.WriteLine($"VUELTO       : S/. 0.00 (Pago no efectivo)");
-                    }
-
-                    sw.WriteLine("========================================================");
-                    sw.WriteLine("        ¡GRACIAS POR SU COMPRA - VENID COMED!           ");
-                    sw.WriteLine("========================================================");
+                    sw.Write(GenerarContenidoTicket());
                 }
 
                 MessageBox.Show($"Ticket generado\nSe guardó como: {nombreArchivo}", "Éxito");
@@ -195,10 +296,12 @@ namespace VENIDCOMED
         {
             txtCliente.Clear();
             nudCantidad.Value = 1;
-            rtbTicket.Clear();
+            dgvPedidos.Rows.Clear();
             txtPago.Clear();
             lblVuelto.Text = "Vuelto: S/. 0.00";
+            lblTotalPedido.Text = "Total Pedido: S/. 0.00";
             totalOrdenActual = 0; // Reiniciamos la deuda del cliente actual
+            if (rtbTicketPreview != null) rtbTicketPreview.Clear();
             txtCliente.Focus();
         }
 
@@ -227,7 +330,7 @@ namespace VENIDCOMED
                         sw.WriteLine($"{row.Cells[0].Value},{row.Cells[1].Value},{row.Cells[2].Value},{row.Cells[3].Value},{row.Cells[4].Value},{row.Cells[5].Value}");
                     }
 
-                    sw.WriteLine(",,,,,");
+                    sw.WriteLine(",,,,,,");
                     sw.WriteLine($",,,,TOTAL RECAUDADO DEL DIA,{totalCajaDiaria:F2}");
                 }
 

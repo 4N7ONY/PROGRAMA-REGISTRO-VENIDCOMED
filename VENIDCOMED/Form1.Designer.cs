@@ -17,7 +17,7 @@ namespace VENIDCOMED
         private System.Windows.Forms.Timer timerReloj;
         private TextBox txtCliente;
         private NumericUpDown nudCantidad;
-        private RichTextBox rtbTicket;
+        private RichTextBox rtbTicketPreview;
         private Label lblTotalCaja;
         private TextBox txtPago;
         private ComboBox cmbMetodoPago;
@@ -27,6 +27,10 @@ namespace VENIDCOMED
         private Button btnImprimirTicket;
         private Button btnRegistrar;
         private Button btnCerrarCaja;
+        private DataGridView dgvPedidos;
+        private Label lblPrecioUnitario;
+        private Label lblTotalPedido;
+        private Label label1;
 
         /// <summary>
         ///  Clean up any resources being used.
@@ -55,7 +59,7 @@ namespace VENIDCOMED
             timerReloj = new System.Windows.Forms.Timer(components);
             txtCliente = new TextBox();
             nudCantidad = new NumericUpDown();
-            rtbTicket = new RichTextBox();
+            dgvPedidos = new DataGridView();
             lblTotalCaja = new Label();
             txtPago = new TextBox();
             lblVuelto = new Label();
@@ -64,8 +68,12 @@ namespace VENIDCOMED
             btnRegistrar = new Button();
             btnCerrarCaja = new Button();
             rtbTicketPreview = new RichTextBox();
+            label1 = new Label();
+            lblPrecioUnitario = new Label();
+            lblTotalPedido = new Label();
             ((ISupportInitialize)dgvVentas).BeginInit();
             ((ISupportInitialize)nudCantidad).BeginInit();
+            ((ISupportInitialize)dgvPedidos).BeginInit();
             SuspendLayout();
             // 
             // cmbCategoria
@@ -82,6 +90,7 @@ namespace VENIDCOMED
             cmbProductos.Name = "cmbProductos";
             cmbProductos.Size = new Size(250, 23);
             cmbProductos.TabIndex = 1;
+            cmbProductos.SelectedIndexChanged += cmbProductos_SelectedIndexChanged;
             // 
             // cmbMetodoPago
             // 
@@ -102,14 +111,15 @@ namespace VENIDCOMED
             // dgvVentas
             // 
             dgvVentas.AllowUserToAddRows = false;
-            dgvVentas.Location = new Point(424, 12);
+            dgvVentas.BackgroundColor = Color.LightCyan;
+            dgvVentas.Location = new Point(424, 42);
             dgvVentas.Name = "dgvVentas";
-            dgvVentas.Size = new Size(480, 300);
+            dgvVentas.Size = new Size(480, 310);
             dgvVentas.TabIndex = 6;
             // 
             // lblReloj
             // 
-            lblReloj.Location = new Point(12, 356);
+            lblReloj.Location = new Point(919, 454);
             lblReloj.Name = "lblReloj";
             lblReloj.Size = new Size(200, 23);
             lblReloj.TabIndex = 10;
@@ -139,17 +149,21 @@ namespace VENIDCOMED
             nudCantidad.TabIndex = 3;
             nudCantidad.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
-            // rtbTicket
+            // dgvPedidos
             // 
-            rtbTicket.Location = new Point(12, 97);
-            rtbTicket.Name = "rtbTicket";
-            rtbTicket.Size = new Size(406, 200);
-            rtbTicket.TabIndex = 5;
-            rtbTicket.Text = "";
+            dgvPedidos.BackgroundColor = Color.White;
+            dgvPedidos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvPedidos.Location = new Point(12, 127);
+            dgvPedidos.Name = "dgvPedidos";
+            dgvPedidos.RowHeadersVisible = false;
+            dgvPedidos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvPedidos.Size = new Size(406, 247);
+            dgvPedidos.TabIndex = 5;
+            dgvPedidos.CellContentClick += dgvPedidos_CellContentClick;
             // 
             // lblTotalCaja
             // 
-            lblTotalCaja.Location = new Point(12, 304);
+            lblTotalCaja.Location = new Point(424, 355);
             lblTotalCaja.Name = "lblTotalCaja";
             lblTotalCaja.Size = new Size(300, 23);
             lblTotalCaja.TabIndex = 7;
@@ -157,7 +171,7 @@ namespace VENIDCOMED
             // 
             // txtPago
             // 
-            txtPago.Location = new Point(12, 325);
+            txtPago.Location = new Point(12, 98);
             txtPago.Name = "txtPago";
             txtPago.PlaceholderText = "Pago";
             txtPago.Size = new Size(100, 23);
@@ -166,7 +180,7 @@ namespace VENIDCOMED
             // 
             // lblVuelto
             // 
-            lblVuelto.Location = new Point(118, 329);
+            lblVuelto.Location = new Point(118, 98);
             lblVuelto.Name = "lblVuelto";
             lblVuelto.Size = new Size(200, 23);
             lblVuelto.TabIndex = 9;
@@ -210,19 +224,49 @@ namespace VENIDCOMED
             // 
             // rtbTicketPreview
             // 
-            rtbTicketPreview.BackColor = SystemColors.ControlLight;
-            rtbTicketPreview.Location = new Point(424, 320);
+            rtbTicketPreview.BackColor = SystemColors.Control;
+            rtbTicketPreview.Location = new Point(919, 12);
             rtbTicketPreview.Name = "rtbTicketPreview";
             rtbTicketPreview.ReadOnly = true;
-            rtbTicketPreview.Size = new Size(480, 80);
+            rtbTicketPreview.Size = new Size(480, 439);
             rtbTicketPreview.TabIndex = 14;
             rtbTicketPreview.Text = "";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.Location = new Point(541, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(212, 30);
+            label1.TabIndex = 17;
+            label1.Text = "REGISTROS DEL DIA";
+            // 
+            // lblPrecioUnitario
+            // 
+            lblPrecioUnitario.AutoSize = true;
+            lblPrecioUnitario.Location = new Point(424, 355);
+            lblPrecioUnitario.Name = "lblPrecioUnitario";
+            lblPrecioUnitario.Size = new Size(88, 15);
+            lblPrecioUnitario.TabIndex = 18;
+            lblPrecioUnitario.Text = "Precio Unitario:";
+            // 
+            // lblTotalPedido
+            // 
+            lblTotalPedido.AutoSize = true;
+            lblTotalPedido.Location = new Point(288, 98);
+            lblTotalPedido.Name = "lblTotalPedido";
+            lblTotalPedido.Size = new Size(76, 15);
+            lblTotalPedido.TabIndex = 19;
+            lblTotalPedido.Text = "Total Pedido:";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(920, 420);
+            BackColor = SystemColors.InactiveCaption;
+            ClientSize = new Size(1476, 604);
+            Controls.Add(label1);
             Controls.Add(cmbCategoria);
             Controls.Add(cmbProductos);
             Controls.Add(lblMetodoPago);
@@ -230,9 +274,9 @@ namespace VENIDCOMED
             Controls.Add(txtCliente);
             Controls.Add(nudCantidad);
             Controls.Add(btnRegistrar);
-            Controls.Add(rtbTicket);
-            Controls.Add(rtbTicketPreview);
             Controls.Add(dgvVentas);
+            Controls.Add(dgvPedidos);
+            Controls.Add(rtbTicketPreview);
             Controls.Add(lblTotalCaja);
             Controls.Add(txtPago);
             Controls.Add(lblVuelto);
@@ -240,17 +284,18 @@ namespace VENIDCOMED
             Controls.Add(btnNuevaOrden);
             Controls.Add(btnImprimirTicket);
             Controls.Add(btnCerrarCaja);
+            Controls.Add(lblPrecioUnitario);
+            Controls.Add(lblTotalPedido);
             Name = "Form1";
             Text = "VENID COMED";
             Load += Form1_Load;
             ((ISupportInitialize)dgvVentas).EndInit();
             ((ISupportInitialize)nudCantidad).EndInit();
+            ((ISupportInitialize)dgvPedidos).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private RichTextBox rtbTicketPreview;
     }
 }
