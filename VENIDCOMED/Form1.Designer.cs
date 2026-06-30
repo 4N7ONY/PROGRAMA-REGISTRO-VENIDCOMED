@@ -138,6 +138,7 @@ namespace VENIDCOMED
             txtCliente.PlaceholderText = "Cliente";
             txtCliente.Size = new Size(200, 23);
             txtCliente.TabIndex = 2;
+            txtCliente.KeyPress += txtCliente_KeyPress;
             // 
             // nudCantidad
             // 

@@ -23,6 +23,95 @@ namespace VENIDCOMED
             InitializeComponent();
         }
 
+        // --- Login simple en memoria ---
+        private bool MostrarLogin()
+        {
+            using (Form login = new Form())
+            {
+                login.StartPosition = FormStartPosition.CenterParent;
+                login.FormBorderStyle = FormBorderStyle.FixedDialog;
+                login.ClientSize = new System.Drawing.Size(300, 160);
+                login.Text = "Login";
+
+                Label lblUser = new Label() { Left = 10, Top = 10, Text = "Usuario", Width = 80 };
+                TextBox txtUser = new TextBox() { Left = 100, Top = 10, Width = 170 };
+
+                Label lblPass = new Label() { Left = 10, Top = 40, Text = "Contraseña", Width = 80 };
+                TextBox txtPass = new TextBox() { Left = 100, Top = 40, Width = 170, UseSystemPasswordChar = true };
+
+                Button btnOk = new Button() { Text = "Entrar", Left = 100, Width = 80, Top = 80, DialogResult = DialogResult.OK };
+                Button btnCancel = new Button() { Text = "Cancelar", Left = 190, Width = 80, Top = 80, DialogResult = DialogResult.Cancel };
+
+                login.Controls.Add(lblUser);
+                login.Controls.Add(txtUser);
+                login.Controls.Add(lblPass);
+                login.Controls.Add(txtPass);
+                login.Controls.Add(btnOk);
+                login.Controls.Add(btnCancel);
+
+                login.AcceptButton = btnOk;
+                login.CancelButton = btnCancel;
+
+                if (login.ShowDialog(this) == DialogResult.OK)
+                {
+                    // Credenciales en memoria: admin / 1234
+                    string user = txtUser.Text.Trim();
+                    string pass = txtPass.Text;
+                    return (user == "admin" && pass == "1234");
+                }
+
+                return false;
+            }
+        }
+
+        private bool IsValidName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            // Requiere al menos 2 caracteres
+            if (name.Trim().Length < 2) return false;
+
+            foreach (char c in name)
+            {
+                if (char.IsLetter(c) || char.IsWhiteSpace(c) || c == '-' || c == '\'') continue;
+                return false;
+            }
+
+            return true;
+        }
+
+        private void txtCliente_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Permitir control chars, letras, espacios, guión y apóstrofe
+            if (char.IsControl(e.KeyChar) || char.IsWhiteSpace(e.KeyChar) || char.IsLetter(e.KeyChar) || e.KeyChar == '-' || e.KeyChar == '\'')
+            {
+                e.Handled = false;
+            }
+            else
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void cmbMetodoPago_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbMetodoPago == null) return;
+
+            string metodo = cmbMetodoPago.SelectedItem?.ToString() ?? "Efectivo";
+            if (metodo == "Efectivo")
+            {
+                txtPago.Enabled = true;
+                txtPago.Text = string.Empty;
+                txtPago.Focus();
+            }
+            else
+            {
+                // Para métodos no efectivos, marcar el pago como el total (no editable)
+                txtPago.Enabled = false;
+                txtPago.Text = totalOrdenActual.ToString("F2");
+                CalcularVuelto();
+            }
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             cmbCategoria.Items.Add("Comidas");
